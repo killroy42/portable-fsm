@@ -5,7 +5,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/killroy42/portable-uuid"
+    "url": "https://github.com/killroy42/portable-fsm"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -17,8 +17,10 @@
   ],
   "author": "Sven Neumann <killroy@gmail.com> (http://svenneumann.com/)",
   "license": "MIT",
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {},
+  "bugs": {
+    "url": "https://github.com/killroy42/portable-fsm/issues"
   },
-  "devDependencies": {
-  }
+  "homepage": "https://github.com/killroy42/portable-fsm"
 }

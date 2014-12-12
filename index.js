@@ -51,6 +51,7 @@ FSM.prototype.when = function(event, whenDo) {
 FSM.prototype.consume = function(e) {
 	this.debugLog('Queuing (%s) in [%s]', e, this.state);
 	this.eventQueue.push(Array.prototype.slice.call(arguments));
+	if(this.inTransit) return this;
 	while(this.eventQueue.length > 0) {
 		this.handleTransition.apply(this, this.eventQueue.pop());
 	}
