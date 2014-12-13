@@ -1,6 +1,6 @@
 {
   "name": "portable-fsm",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Simple, node/browser compatible generic FSM system",
   "main": "index.js",
   "repository": {
