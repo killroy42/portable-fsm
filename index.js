@@ -23,7 +23,7 @@ FSM.prototype.debugLog = function() {
 	console.info.apply(console, arguments);
 }
 
-FSM.prototype.addEvent = function(state, e, nextState) {
+FSM.prototype.addState = function(state, e, nextState) {
 	if(this.transitions[state] == undefined) this.transitions[state] = {};
 	if(typeof e === 'undefined' && typeof nextState === 'undefined') {
 		return;
