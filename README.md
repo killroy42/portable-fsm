@@ -13,10 +13,10 @@ var
 
 fsm.debug = true;
 
-fsm.addEvent('start', {
+fsm.addState('start', {
 	init: 'inProgress'
 });
-fsm.addEvent('inProgress', {
+fsm.addState('inProgress', {
 	abort: 'cancelled',
 	complete: 'done'
 });
