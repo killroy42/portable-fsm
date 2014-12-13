@@ -63,19 +63,19 @@ FSM.prototype.handleTransition = function(e) {
 		prevState = this.state,
 		nextState = this.transitions[this.state][e],
 		args = Array.prototype.slice.call(arguments, 1);
-	this.debugLog('  Consume (%s) in [%s]', e, prevState);
+	this.debugLog('Consume (%s) in [%s]', e, prevState);
 	if(this.transitions[prevState] == undefined || this.transitions[prevState][e] == undefined) {
-		console.warn('    Invalid transition (%s) from [%s]', e, prevState);
+		console.warn('  Invalid transition (%s) from [%s]', e, prevState);
 		return this;
 	}
 	this.inTransit = true;
-	this.debugLog('    Begin transit: [%s] -(%s)-> [%s]', prevState, e, nextState);
+	this.debugLog('  Begin transit: [%s] -(%s)-> [%s]', prevState, e, nextState);
 	if(this.onLeaveState[prevState]) this.onLeaveState[prevState].apply(this, args);
-	this.debugLog('    Setting state: [%s] --> [%s]', prevState, nextState);
+	this.debugLog('  Setting state: [%s] --> [%s]', prevState, nextState);
 	this.state = nextState;
 	if(this.onTransit[e]) this.onTransit[e].apply(this, args);
 	if(this.onEnterState[nextState]) this.onEnterState[nextState].apply(this, args);
-	this.debugLog('    Complete transit: [%s] -(%s)-> [%s]', prevState, e, nextState);
+	this.debugLog('  Complete transit: [%s] -(%s)-> [%s]', prevState, e, nextState);
 	this.inTransit = false;
 	return this;
 };
