@@ -20,7 +20,7 @@ FSM.prototype.reset = function() {
 FSM.prototype.debugLog = function() {
 	if(!this.debug) return;
 	arguments[0] = '['+this.name+'] '+arguments[0];
-	console.info.apply(console, arguments);
+	console.log.apply(console, arguments);
 }
 
 FSM.prototype.addState = function(state, e, nextState) {
@@ -59,19 +59,17 @@ FSM.prototype.consume = function(e) {
 };
 
 FSM.prototype.handleTransition = function(e) {
+	if(this.transitions[this.state] == undefined || this.transitions[this.state][e] == undefined) {
+		console.warn('  Invalid transition (%s) from [%s]', e, this.state);
+		return this;
+	}
 	var
 		prevState = this.state,
 		nextState = this.transitions[this.state][e],
 		args = Array.prototype.slice.call(arguments, 1);
-	this.debugLog('Consume (%s) in [%s]', e, prevState);
-	if(this.transitions[prevState] == undefined || this.transitions[prevState][e] == undefined) {
-		console.warn('  Invalid transition (%s) from [%s]', e, prevState);
-		return this;
-	}
 	this.inTransit = true;
 	this.debugLog('  Begin transit: [%s] -(%s)-> [%s]', prevState, e, nextState);
 	if(this.onLeaveState[prevState]) this.onLeaveState[prevState].apply(this, args);
-	this.debugLog('  Setting state: [%s] --> [%s]', prevState, nextState);
 	this.state = nextState;
 	if(this.onTransit[e]) this.onTransit[e].apply(this, args);
 	if(this.onEnterState[nextState]) this.onEnterState[nextState].apply(this, args);
@@ -81,7 +79,12 @@ FSM.prototype.handleTransition = function(e) {
 };
 
 FSM.prototype.consumer = function(e) {
-	return this.consume.bind(this, e);
+	var
+		that = this,
+		args = arguments;
+	return function() {
+		return that.consume.apply(that, args);
+	}
 };
 
 

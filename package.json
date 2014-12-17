@@ -1,6 +1,6 @@
 {
   "name": "portable-fsm",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Simple, node/browser compatible generic FSM system",
   "main": "index.js",
   "repository": {
@@ -15,12 +15,22 @@
     "browser",
     "node"
   ],
-  "author": "Sven Neumann <killroy@gmail.com> (http://svenneumann.com/)",
+  "author": {
+    "name": "Sven Neumann",
+    "email": "killroy@gmail.com",
+    "url": "http://svenneumann.com/"
+  },
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {},
   "bugs": {
     "url": "https://github.com/killroy42/portable-fsm/issues"
   },
-  "homepage": "https://github.com/killroy42/portable-fsm"
+  "homepage": "https://github.com/killroy42/portable-fsm",
+  "readme": "portable-fsm\r\n=============\r\n\r\nSimple, node/browser compatible generic FSM system\r\n\r\nExamples\r\n--------\r\n\r\n```javascript\r\nvar\r\n\tFSM = require('portable-fsm'),\r\n\tfsm = new FSM();\r\n\r\nfsm.debug = true;\r\n\r\nfsm.addState('start', {\r\n\tinit: 'inProgress'\r\n});\r\nfsm.addState('inProgress', {\r\n\tabort: 'cancelled',\r\n\tcomplete: 'done'\r\n});\r\n\r\nfsm.on('inProgress',\r\n\tfunction() {\r\n\t\tconsole.log('Progress start');\r\n\t\tif(Math.random() > 0.5) {\r\n\t\t\tconsole.log(' -> Aborting...');\r\n\t\t\tfsm.consume('abort');\r\n\t\t} else {\r\n\t\t\tconsole.log(' -> Completing...');\r\n\t\t\tfsm.consume('complete');\r\n\t\t}\r\n\t},\r\n\tfunction() {\r\n\t\tconsole.log('Progress end');\r\n\t}\r\n);\r\nfsm.on('cancelled', function() {\r\n\tconsole.log('Operation cancelled');\r\n});\r\nfsm.on('done', function() {\r\n\tconsole.log('Operation completed');\r\n});\r\nfsm.when('complete', function() { console.log('ALL DONE!');});\r\nfsm.when('abort', function() { console.log('ABORT! ABORT! ABORT!');});\r\n\r\nfsm.consume('init');\r\n```",
+  "readmeFilename": "README.md",
+  "gitHead": "90b70b068a9a485ed1f0d970970f6d12a94352bc",
+  "_id": "portable-fsm@1.0.2",
+  "_shasum": "69009675743f8e078291eab09772cd7334be3c2a",
+  "_from": "portable-fsm@1.0.2"
 }
