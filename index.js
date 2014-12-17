@@ -81,9 +81,9 @@ FSM.prototype.handleTransition = function(e) {
 FSM.prototype.consumer = function(e) {
 	var
 		that = this,
-		args = arguments;
+		args = Array.prototype.slice.call(arguments, 0);
 	return function() {
-		return that.consume.apply(that, args);
+		return that.consume.apply(that, args.concat(Array.prototype.slice.call(arguments, 0)));
 	}
 };
 
