@@ -55,6 +55,7 @@ FSM.prototype.on = function(state, onEnter, onExit) {
 
 FSM.prototype.when = function(event, whenDo) {
 	if(typeof whenDo ==='function') this.onTransit[event] = whenDo;
+	return this;
 }
 
 FSM.prototype.consume = function(e) {

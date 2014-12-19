@@ -13,16 +13,18 @@ var
 
 fsm.debug = true;
 
-fsm.addState('start', {
-	init: 'inProgress'
-});
-fsm.addState('inProgress', {
-	abort: 'cancelled',
-	complete: 'done'
+fsm.addState({
+	Start: {
+		init: 'InProgress'
+	},
+	InProgress: {
+		abort: 'Cancelled',
+		complete: 'Done'
+	}
 });
 
-fsm.on('inProgress',
-	function() {
+fsm
+	.on('InProgress', function() {
 		console.log('Progress start');
 		if(Math.random() > 0.5) {
 			console.log(' -> Aborting...');
@@ -31,19 +33,23 @@ fsm.on('inProgress',
 			console.log(' -> Completing...');
 			fsm.consume('complete');
 		}
-	},
-	function() {
-		console.log('Progress end');
-	}
-);
-fsm.on('cancelled', function() {
-	console.log('Operation cancelled');
-});
-fsm.on('done', function() {
-	console.log('Operation completed');
-});
-fsm.when('complete', function() { console.log('ALL DONE!');});
-fsm.when('abort', function() { console.log('ABORT! ABORT! ABORT!');});
+	}, function() {
+			console.log('Progress end');
+	})
+	.on('Cancelled', function() {
+		console.log('Operation cancelled');
+	})
+	.on('Done', function() {
+		console.log('Operation completed');
+	});
+
+fsm
+	.when('complete', function() {
+		console.log('ALL DONE!');
+	})
+	.when('abort', function() {
+		console.log('ABORT! ABORT! ABORT!');
+	});
 
 fsm.consume('init');
 ```
