@@ -1,11 +1,15 @@
 (function(){
 'use strict';
 
-var FSM = function() {
+var FSM = function(initialState) {
 	this.name = 'FSM';
 	this.debug = false;
+	this.initialState = initialState || FSM.INITIAL_STATE;
+	this.onError = null;
 	this.reset();
 };
+FSM.INITIAL_STATE = 'Start';
+FSM.ERROR_INVALIDTRANSITION = 'ERROR_INVALIDTRANSITION';
 
 FSM.prototype.reset = function() {
 	this.inTransit = false;
@@ -14,7 +18,9 @@ FSM.prototype.reset = function() {
 	this.onEnterState = {};
 	this.onLeaveState = {};
 	this.onTransit = {};
-	this.state = 'start';
+	this.state = this.initialState;
+	this.lastTransition = null;
+	this.currentTransition = null;
 }
 
 FSM.prototype.debugLog = function() {
@@ -23,18 +29,20 @@ FSM.prototype.debugLog = function() {
 	console.log.apply(console, arguments);
 }
 
-FSM.prototype.addState = function(state, e, nextState) {
-	if(this.transitions[state] == undefined) this.transitions[state] = {};
-	if(typeof e === 'undefined' && typeof nextState === 'undefined') {
-		return;
-	} else if(typeof e === 'string' && typeof nextState === 'string') {
-		this.transitions[state][e] = nextState;
-	} else if(typeof e === 'object') {
-		var keys = Object.keys(e);
+FSM.prototype.addState = function(state, transitions) {
+	if(typeof state == 'object') {
+		var states = Object.keys(state);
+		for(var i = 0; i < states.length; i++) {
+			this.addState(states[i], state[states[i]]);
+		}
+	} else if(typeof state == 'string' && typeof transitions == 'object') {
+		var keys = Object.keys(transitions);
+		if(this.transitions[state] == undefined) this.transitions[state] = {};
 		for(var i = 0; i < keys.length; i++) {
-			this.transitions[state][keys[i]] = e[keys[i]];
+			this.transitions[state][keys[i]] = transitions[keys[i]];
 		}
 	} else throw new Error('Invalid arguments.');
+	return this;
 };
 
 FSM.prototype.on = function(state, onEnter, onExit) {
@@ -42,6 +50,7 @@ FSM.prototype.on = function(state, onEnter, onExit) {
 	if(onEnter === null) delete this.onEnterState[state];
 	if(typeof onExit ==='function') this.onLeaveState[state] = onExit;
 	if(onExit === null) delete this.onLeaveState[state];
+	return this;
 };
 
 FSM.prototype.when = function(event, whenDo) {
@@ -53,15 +62,20 @@ FSM.prototype.consume = function(e) {
 	this.eventQueue.push(Array.prototype.slice.call(arguments));
 	if(this.inTransit) return this;
 	while(this.eventQueue.length > 0) {
-		this.handleTransition.apply(this, this.eventQueue.pop());
+		this.handleTransition.apply(this, this.eventQueue.shift()); // Apply arguments
 	}
 	return this;
 };
 
-FSM.prototype.handleTransition = function(e) {
+FSM.prototype.handleTransition = function(e) { // Has arguments
+	this.currentTransition = e;
 	if(this.transitions[this.state] == undefined || this.transitions[this.state][e] == undefined) {
-		console.warn('  Invalid transition (%s) from [%s]', e, this.state);
-		return this;
+		if(typeof this.onError == 'function') {
+			this.onError(FSM.ERROR_INVALIDTRANSITION);
+		} else {
+			this.defaultErrorHandler(FSM.ERROR_INVALIDTRANSITION);
+		}
+		return;
 	}
 	var
 		prevState = this.state,
@@ -71,11 +85,12 @@ FSM.prototype.handleTransition = function(e) {
 	this.debugLog('  Begin transit: [%s] -(%s)-> [%s]', prevState, e, nextState);
 	if(this.onLeaveState[prevState]) this.onLeaveState[prevState].apply(this, args);
 	this.state = nextState;
+	this.lastTransition = this.currentTransition;
 	if(this.onTransit[e]) this.onTransit[e].apply(this, args);
 	if(this.onEnterState[nextState]) this.onEnterState[nextState].apply(this, args);
 	this.debugLog('  Complete transit: [%s] -(%s)-> [%s]', prevState, e, nextState);
+	this.currentTransition = null;
 	this.inTransit = false;
-	return this;
 };
 
 FSM.prototype.consumer = function(e) {
@@ -86,6 +101,16 @@ FSM.prototype.consumer = function(e) {
 		return that.consume.apply(that, args.concat(Array.prototype.slice.call(arguments, 0)));
 	}
 };
+
+FSM.prototype.defaultErrorHandler = function(err) {
+	switch(err) {
+		case (FSM.ERROR_INVALIDTRANSITION):
+			console.warn('[%s] Invalid transition (%s) from [%s]', this.name, this.currentTransition, this.state);
+			break;
+		default:
+			throw new Error('['+this.name+'] Unknown FSM error: '+err);
+	}
+}
 
 
 // export in common js
