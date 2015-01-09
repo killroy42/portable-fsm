@@ -103,6 +103,27 @@ FSM.prototype.consumer = function(e) {
 	}
 };
 
+FSM.prototype.addConsumers = function(target) {
+	var
+		transitions = this.transitions,
+		transitionLabels;
+	// First collect transitions
+	transitionLabels = [].concat.apply([], Object.keys(transitions).map(function(state) {
+		return Object.keys(transitions[state]);
+	}))
+	// Then make them unique
+	.filter(function() {
+		var seen = {};
+		return function(element, index, array) {
+		  return !(element in seen) && (seen[element] = 1);
+		};
+	}())
+	// Finally create consumers on target object
+	.forEach(function(transition) {
+		target[transition] = this.consumer(transition);
+	}.bind(this));
+};
+
 FSM.prototype.defaultErrorHandler = function(err) {
 	switch(err) {
 		case (FSM.ERROR_INVALIDTRANSITION):
