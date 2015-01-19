@@ -45,6 +45,7 @@ FSM.prototype.addState = function(state, transitions) {
 	return this;
 };
 
+// Return false from onExit handler to abort transition.
 FSM.prototype.on = function(state, onEnter, onExit) {
 	if(typeof onEnter ==='function') this.onEnterState[state] = onEnter;
 	if(onEnter === null) delete this.onEnterState[state];
@@ -79,17 +80,27 @@ FSM.prototype.handleTransition = function(e) { // Has arguments
 		return;
 	}
 	var
+		abortTransit = false,
 		prevState = this.state,
 		nextState = this.transitions[this.state][e],
 		args = Array.prototype.slice.call(arguments, 1);
 	this.inTransit = true;
 	this.debugLog('  Begin transit: [%s] -(%s)-> [%s]', prevState, e, nextState);
-	if(this.onLeaveState[prevState]) this.onLeaveState[prevState].apply(this, args);
-	this.state = nextState;
-	this.lastTransition = this.currentTransition;
-	if(this.onTransit[e]) this.onTransit[e].apply(this, args);
-	if(this.onEnterState[nextState]) this.onEnterState[nextState].apply(this, args);
-	this.debugLog('  Complete transit: [%s] -(%s)-> [%s]', prevState, e, nextState);
+	if(this.onLeaveState[prevState]) {
+		var res = this.onLeaveState[prevState].apply(this, args);
+		abortTransit = (res == false);
+	}
+	if(!abortTransit) {
+		this.state = nextState;
+		this.lastTransition = this.currentTransition;
+		if(this.onTransit[e]) this.onTransit[e].apply(this, args);
+		if(this.onEnterState[nextState]) {
+			this.onEnterState[nextState].apply(this, args);
+		}
+		this.debugLog('  Complete transit: [%s] -(%s)-> [%s]', prevState, e, nextState);
+	} else {
+		this.debugLog('  Aborted transit: [%s] -(%s)-> [%s]', prevState, e, nextState);
+	}
 	this.currentTransition = null;
 	this.inTransit = false;
 };
@@ -103,7 +114,7 @@ FSM.prototype.consumer = function(e) {
 	}
 };
 
-FSM.prototype.addConsumers = function(target) {
+FSM.prototype.mixinConsumers = function(target) {
 	var
 		transitions = this.transitions,
 		transitionLabels;
