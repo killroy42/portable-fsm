@@ -1,6 +1,7 @@
 (function(){
 'use strict';
 
+
 var FSM = function(initialState) {
 	this.name = 'FSM';
 	this.debug = false;
@@ -21,24 +22,25 @@ FSM.prototype.reset = function() {
 	this.state = this.initialState;
 	this.lastTransition = null;
 	this.currentTransition = null;
-}
+};
 
 FSM.prototype.debugLog = function() {
 	if(!this.debug) return;
 	arguments[0] = '['+this.name+'] '+arguments[0];
 	console.log.apply(console, arguments);
-}
+};
 
 FSM.prototype.addState = function(state, transitions) {
+	var i, l;
 	if(typeof state == 'object') {
 		var states = Object.keys(state);
-		for(var i = 0; i < states.length; i++) {
+		for(i = 0, l = states.length; i < l; i++) {
 			this.addState(states[i], state[states[i]]);
 		}
 	} else if(typeof state == 'string' && typeof transitions == 'object') {
 		var keys = Object.keys(transitions);
-		if(this.transitions[state] == undefined) this.transitions[state] = {};
-		for(var i = 0; i < keys.length; i++) {
+		if(this.transitions[state] === undefined) this.transitions[state] = {};
+		for(i = 0, l = keys.length; i < l; i++) {
 			this.transitions[state][keys[i]] = transitions[keys[i]];
 		}
 	} else throw new Error('Invalid arguments.');
@@ -57,7 +59,7 @@ FSM.prototype.on = function(state, onEnter, onExit) {
 FSM.prototype.when = function(event, whenDo) {
 	if(typeof whenDo ==='function') this.onTransit[event] = whenDo;
 	return this;
-}
+};
 
 FSM.prototype.consume = function(e) {
 	this.debugLog('Queuing (%s) in [%s]', e, this.state);
@@ -71,7 +73,7 @@ FSM.prototype.consume = function(e) {
 
 FSM.prototype.handleTransition = function(e) { // Has arguments
 	this.currentTransition = e;
-	if(this.transitions[this.state] == undefined || this.transitions[this.state][e] == undefined) {
+	if(this.transitions[this.state] === undefined || this.transitions[this.state][e] === undefined) {
 		if(typeof this.onError == 'function') {
 			this.onError(FSM.ERROR_INVALIDTRANSITION);
 		} else {
@@ -88,7 +90,7 @@ FSM.prototype.handleTransition = function(e) { // Has arguments
 	this.debugLog('  Begin transit: [%s] -(%s)-> [%s]', prevState, e, nextState);
 	if(this.onLeaveState[prevState]) {
 		var res = this.onLeaveState[prevState].apply(this, args);
-		abortTransit = (res == false);
+		abortTransit = (res === false);
 	}
 	if(!abortTransit) {
 		this.state = nextState;
@@ -111,7 +113,7 @@ FSM.prototype.consumer = function(e) {
 		args = Array.prototype.slice.call(arguments, 0);
 	return function() {
 		return that.consume.apply(that, args.concat(Array.prototype.slice.call(arguments, 0)));
-	}
+	};
 };
 
 FSM.prototype.mixinConsumers = function(target) {
@@ -143,12 +145,13 @@ FSM.prototype.defaultErrorHandler = function(err) {
 		default:
 			throw new Error('['+this.name+'] Unknown FSM error: '+err);
 	}
-}
+};
 
 
 // export in common js
 if( typeof module !== "undefined" && ('exports' in module)) {
 	module.exports = FSM;
+	module.exports['portable-fsm'] = FSM;
 }
 
 })();
